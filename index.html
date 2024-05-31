@@ -1,9 +1,10 @@
-​
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>爱心</title>
+    <meta name="Author" content="" />
+    <meta name="Keywords" content="" />
+    <meta name="Description" content="" />
     <style>
       html,
       body {
@@ -12,407 +13,197 @@
         margin: 0;
         background: #000;
       }
-      .title {
-        background-color: #fff;
-        color: #ea80b0;
-        border-radius: 5px;
-        font-size: 22px;
-        font-weight: bold;
-        padding: 10px 20px;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translateX(-50%) translateY(-65%);
-        text-align: center;
-      }
-      canvas {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        animation: anim 1.5s ease-in-out infinite;
-        -webkit-animation: anim 1.5s ease-in-out infinite;
-        -o-animation: anim 1.5s ease-in-out infinite;
-        -moz-animation: anim 1.5s ease-in-out infinite;
-      }
-
-      @keyframes anim {
-        0% {
-          transform: scale(0.8);
-        }
-        25% {
-          transform: scale(0.7);
-        }
-        50% {
-          transform: scale(1);
-        }
-        75% {
-          transform: scale(0.7);
-        }
-        100% {
-          transform: scale(0.8);
-        }
-      }
-      @-webkit-keyframes anim {
-        0% {
-          -webkit-transform: scale(0.8);
-        }
-        25% {
-          -webkit-transform: scale(0.7);
-        }
-        50% {
-          -webkit-transform: scale(1);
-        }
-        75% {
-          -webkit-transform: scale(0.7);
-        }
-        100% {
-          -webkit-transform: scale(0.8);
-        }
-      }
-      @-o-keyframes anim {
-        0% {
-          -o-transform: scale(0.8);
-        }
-        25% {
-          -o-transform: scale(0.7);
-        }
-        50% {
-          -o-transform: scale(1);
-        }
-        75% {
-          -o-transform: scale(0.7);
-        }
-        100% {
-          -o-transform: scale(0.8);
-        }
-      }
-      @-moz-keyframes anim {
-        0% {
-          -moz-transform: scale(0.8);
-        }
-        25% {
-          -moz-transform: scale(0.7);
-        }
-        50% {
-          -moz-transform: scale(1);
-        }
-        75% {
-          -moz-transform: scale(0.7);
-        }
-        100% {
-          -moz-transform: scale(0.8);
-        }
-      }
-
-      .span {
-        text-shadow: 0 0 10px #dfd8d8;
-        background: linear-gradient(135deg, #14ffe9, #ffeb3b, #ff00e0);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: ff 0.9s linear infinite;
-      }
-      @keyframes ff {
-        to {
-          filter: hue-rotate(360deg);
-        }
-      }
-      .span {
-        font-size: 46px;
-      }
     </style>
   </head>
   <body>
-    <div class="title span">想你想你想我</div>
-    <!-- 爱心闪烁 -->
-    <canvas id="pinkboard" width="1836" height="150"></canvas>
-
+    <canvas id="canvas"></canvas>
     <script>
-      /*
-       * 设置 爱心
-       */
-      var settings = {
-        particles: {
-          length: 500, // 最大的爱心❤颗粒量
-          duration: 2, // 持续时间 秒 单位
-          velocity: 100, // 爱心粒子速度 (像素/秒)
-          effect: -0.75, // 处理效果响应
-          size: 30, // 爱心粒子大小
-        },
-      };
+      const { clientWidth, clientHeight } = document.documentElement;
+      let canvasEl = document.getElementById("canvas");
+      let ctx = canvasEl.getContext("2d");
 
-      /*
-       * 请求爱心动画
-       */
-      (function () {
-        var b = 0;
-        //浏览器兼容
-        var c = ["ms", "moz", "webkit", "o"];
-        //循环请求动画
-        for (var a = 0; a < c.length && !window.requestAnimationFrame; ++a) {
-          window.requestAnimationFrame = window[c[a] + "RequestAnimationFrame"];
-          window.cancelAnimationFrame =
-            window[c[a] + "CancelAnimationFrame"] ||
-            window[c[a] + "CancelRequestAnimationFrame"];
-        }
-        //请求动画加载
-        if (!window.requestAnimationFrame) {
-          window.requestAnimationFrame = function (h, e) {
-            var d = new Date().getTime();
-            var f = Math.max(0, 16 - (d - b));
-            //动画加载时长
-            var g = window.setTimeout(function () {
-              h(d + f);
-            }, f);
-            b = d + f;
-            return g;
-          };
-        }
-        //取消动画
-        if (!window.cancelAnimationFrame) {
-          window.cancelAnimationFrame = function (d) {
-            clearTimeout(d);
-          };
-        }
-      })();
+      // canvas画布的宽 等于 可视区域的宽
+      canvasEl.width = clientWidth;
+      // canvas画布的高 等于 可视区域的高
+      canvasEl.height = clientHeight;
 
-      /*
-       * Point[指向] 类
-       */
-      var Point = (function () {
-        function Point(x, y) {
-          this.x = typeof x !== "undefined" ? x : 0;
-          this.y = typeof y !== "undefined" ? y : 0;
-        }
-        Point.prototype.clone = function () {
-          return new Point(this.x, this.y);
-        };
-        Point.prototype.length = function (length) {
-          if (typeof length == "undefined")
-            return Math.sqrt(this.x * this.x + this.y * this.y);
-          this.normalize();
-          this.x *= length;
-          this.y *= length;
-          return this;
-        };
-        Point.prototype.normalize = function () {
-          var length = this.length();
-          this.x /= length;
-          this.y /= length;
-          return this;
-        };
-        return Point;
-      })();
+      const HEART_COLOR = "#FF69B4"; // 顏色
+      const ENLARGE = 11; //放大倍數
+      const RADIAN_INC = Math.PI / 180; //增量
+      const DEVIATION_W = clientWidth / 2; //偏移W
+      const DEVIATION_H = clientHeight / 2; //偏移H
 
-      /*
-       * Particle[微粒] class
-       */
-      var Particle = (function () {
-        function Particle() {
-          this.position = new Point();
-          this.velocity = new Point();
-          this.acceleration = new Point();
-          this.age = 0;
-        }
-        Particle.prototype.initialize = function (x, y, dx, dy) {
-          this.position.x = x;
-          this.position.y = y;
-          this.velocity.x = dx;
-          this.velocity.y = dy;
-          this.acceleration.x = dx * settings.particles.effect;
-          this.acceleration.y = dy * settings.particles.effect;
-          this.age = 0;
-        };
-        Particle.prototype.update = function (deltaTime) {
-          this.position.x += this.velocity.x * deltaTime;
-          this.position.y += this.velocity.y * deltaTime;
-          this.velocity.x += this.acceleration.x * deltaTime;
-          this.velocity.y += this.acceleration.y * deltaTime;
-          this.age += deltaTime;
-        };
-        Particle.prototype.draw = function (context, image) {
-          function ease(t) {
-            return --t * t * t + 1;
+      let renderFrame = 0; // render
+
+      ctx.strokeStyle = HEART_COLOR; // 设置画笔颜色
+
+      function getHeart(t, shrinkRatio = ENLARGE) {
+        let x = 16 * Math.pow(Math.sin(t), 3);
+        let y = -(
+          13 * Math.cos(t) -
+          5 * Math.cos(2 * t) -
+          2 * Math.cos(3 * t) -
+          Math.cos(4 * t)
+        );
+
+        x *= shrinkRatio;
+        y *= shrinkRatio;
+
+        x += DEVIATION_W;
+        y += DEVIATION_H;
+        return [x, y];
+      }
+
+      function scatterInside(x, y, beta = 0.15) {
+        let ratioX = -beta * Math.log(Math.random());
+        let ratioY = -beta * Math.log(Math.random());
+        let dx = ratioX * (x - DEVIATION_W);
+        let dy = ratioY * (y - DEVIATION_H);
+
+        return [x - dx, y - dy];
+      }
+
+      function shrink(x, y, ratio) {
+        const force =
+          -1 / ((x - DEVIATION_W) ** 2 + (y - DEVIATION_H) ** 2) ** 0.6;
+        const dx = ratio * force * (x - DEVIATION_W);
+        const dy = ratio * force * (y - DEVIATION_H);
+        return [x - dx, y - dy];
+      }
+
+      function curve(p) {
+        return (2 * (2 * Math.sin(4 * p))) / (2 * Math.PI);
+      }
+
+      function getRandom(arr) {
+        const index = Math.floor(Math.random() * arr.length);
+        return arr[index];
+      }
+
+      function getRandi(min, max) {
+        max++;
+        return Math.floor(Math.random() * (+max - +min)) + +min;
+      }
+
+      function canvasRect(canvasData) {
+        const [x, y, size] = canvasData;
+        ctx.fillStyle = HEART_COLOR;
+        ctx.beginPath();
+        ctx.rect(x, y, size, size);
+        ctx.stroke();
+      }
+
+      class Heart {
+        constructor(generateFrame = 24) {
+          this.points = [];
+          this.edgePoints = [];
+          this.centerPoints = [];
+          this.allPoints = {};
+          this.build(2000);
+          this.generateFrame = generateFrame;
+          for (let i = 0; i < generateFrame; i++) {
+            this.calc(i);
           }
-          var size = image.width * ease(this.age / settings.particles.duration);
-          context.globalAlpha = 1 - this.age / settings.particles.duration;
-          context.drawImage(
-            image,
-            this.position.x - size / 2,
-            this.position.y - size / 2,
-            size,
-            size
+        }
+        calcPosition(x, y, ratio) {
+          const force =
+            1 / ((x - DEVIATION_W) ** 2 + (y - DEVIATION_H) ** 2) ** 0.52;
+
+          const dx = ratio * force * (x - DEVIATION_W) + getRandi(-1, 1);
+          const dy = ratio * force * (y - DEVIATION_H) + getRandi(-1, 1);
+
+          return [x - dx, y - dy];
+        }
+
+        calc(generateFrame) {
+          const ratio = 10 * curve((generateFrame / 10) * Math.PI);
+
+          const haloRadius = Number(
+            4 + 6 * (1 + curve((generateFrame / 10) * Math.PI))
           );
-        };
-        return Particle;
-      })();
-
-      /*
-       * ParticlePool[粒子池] class
-       */
-      var ParticlePool = (function () {
-        var particles,
-          firstActive = 0,
-          firstFree = 0,
-          duration = settings.particles.duration;
-
-        function ParticlePool(length) {
-          // 创建和填充粒子效果
-          particles = new Array(length);
-          for (var i = 0; i < particles.length; i++)
-            particles[i] = new Particle();
-        }
-        ParticlePool.prototype.add = function (x, y, dx, dy) {
-          particles[firstFree].initialize(x, y, dx, dy);
-
-          // 处理循环队列状态
-          firstFree++;
-          if (firstFree == particles.length) firstFree = 0;
-          if (firstActive == firstFree) firstActive++;
-          if (firstActive == particles.length) firstActive = 0;
-        };
-        ParticlePool.prototype.update = function (deltaTime) {
-          var i;
-
-          // 更新活动爱心粒子
-          if (firstActive < firstFree) {
-            for (i = firstActive; i < firstFree; i++)
-              particles[i].update(deltaTime);
-          }
-          if (firstFree < firstActive) {
-            for (i = firstActive; i < particles.length; i++)
-              particles[i].update(deltaTime);
-            for (i = 0; i < firstFree; i++) particles[i].update(deltaTime);
-          }
-
-          // 去除非活动爱心粒子
-          while (
-            particles[firstActive].age >= duration &&
-            firstActive != firstFree
-          ) {
-            firstActive++;
-            if (firstActive == particles.length) firstActive = 0;
-          }
-        };
-        ParticlePool.prototype.draw = function (context, image) {
-          // 绘制活动爱心粒子
-          if (firstActive < firstFree) {
-            for (i = firstActive; i < firstFree; i++)
-              particles[i].draw(context, image);
-          }
-          if (firstFree < firstActive) {
-            for (i = firstActive; i < particles.length; i++)
-              particles[i].draw(context, image);
-            for (i = 0; i < firstFree; i++) particles[i].draw(context, image);
-          }
-        };
-        return ParticlePool;
-      })();
-
-      /*
-       * P填充在一起
-       */
-      (function (canvas) {
-        var context = canvas.getContext("2d"),
-          particles = new ParticlePool(settings.particles.length),
-          particleRate =
-            settings.particles.length / settings.particles.duration, // 爱心粒子 最大 速度 单位秒
-          time;
-
-        // 读取爱心指向的位置 - PI <= t <= PI
-        function pointOnHeart(t) {
-          return new Point(
-            160 * Math.pow(Math.sin(t), 3),
-            130 * Math.cos(t) -
-              50 * Math.cos(2 * t) -
-              20 * Math.cos(3 * t) -
-              10 * Math.cos(4 * t) +
-              25
+          const haloNumber = Number(
+            1000 + 2000 * Math.abs(curve((generateFrame / 10) * Math.PI) ** 2)
           );
-        }
 
-        // 使用虚拟画布创建图像
-        var image = (function () {
-          var canvas = document.createElement("canvas"),
-            context = canvas.getContext("2d");
-          canvas.width = settings.particles.size;
-          canvas.height = settings.particles.size;
-          // 创建路径helper
-          function to(t) {
-            var point = pointOnHeart(t);
-            point.x =
-              settings.particles.size / 2 +
-              (point.x * settings.particles.size) / 350;
-            point.y =
-              settings.particles.size / 2 -
-              (point.y * settings.particles.size) / 350;
-            return point;
+          const allPoints = [];
+
+          const heartHaloPoint = new Set();
+
+          for (let i = 0; i < haloNumber; i++) {
+            let [_x, _y] = getHeart(Math.random() * 4 * Math.PI, 11.5);
+            let [x, y] = shrink(_x, _y, haloRadius);
+            if (!heartHaloPoint.has([x, y])) {
+              heartHaloPoint.add([x, y]);
+              x += getRandi(-14, 14);
+              y += getRandi(-14, 14);
+              const size = getRandom([1, 2, 2]);
+              allPoints.push([x, y, size]);
+            }
           }
-          // 创建路径
-          context.beginPath();
-          var t = -Math.PI;
-          var point = to(t);
-          context.moveTo(point.x, point.y);
-          while (t < Math.PI) {
-            t += 0.01;
-            point = to(t);
-            context.lineTo(point.x, point.y);
+          // 轮廓
+          for (let i = 0; i < this.points.length; i++) {
+            const [_x, _y] = this.points[i];
+            const [x, y] = this.calcPosition(_x, _y, ratio);
+            const size = getRandi(1, 3);
+            allPoints.push([x, y, size]);
           }
-          context.closePath();
-          // 填充颜色
-          context.fillStyle = "#ea80b0";
-          context.fill();
-          // 创建图像
-          var image = new Image();
-          image.src = canvas.toDataURL();
-          return image;
-        })();
-
-        // 呈现效果
-        function render() {
-          // 下一个动画帧 --- 请求动画
-          requestAnimationFrame(render);
-
-          // 更新时间
-          var newTime = new Date().getTime() / 1000,
-            deltaTime = newTime - (time || newTime);
-          time = newTime;
-
-          // 透明布效果
-          context.clearRect(0, 0, canvas.width, canvas.height);
-
-          // 创建新爱心粒子
-          var amount = particleRate * deltaTime;
-          for (var i = 0; i < amount; i++) {
-            var pos = pointOnHeart(Math.PI - 2 * Math.PI * Math.random());
-            var dir = pos.clone().length(settings.particles.velocity);
-            particles.add(
-              canvas.width / 2 + pos.x,
-              canvas.height / 2 - pos.y,
-              dir.x,
-              -dir.y
-            );
+          // 外围
+          for (let i = 0; i < this.edgePoints.length; i++) {
+            const [_x, _y] = this.edgePoints[i];
+            const [x, y] = this.calcPosition(_x, _y, ratio);
+            const size = getRandi(1, 2);
+            allPoints.push([x, y, size]);
+          }
+          // 内部
+          for (let i = 0; i < this.centerPoints.length; i++) {
+            const [_x, _y] = this.centerPoints[i];
+            const [x, y] = this.calcPosition(_x, _y, ratio);
+            const size = getRandi(1, 2);
+            allPoints.push([x, y, size]);
           }
 
-          // 更换和绘制爱心粒子效果
-          particles.update(deltaTime);
-          particles.draw(context, image);
+          this.allPoints[generateFrame] = allPoints;
         }
 
-        // 画布整体大小效果
-        function onResize() {
-          canvas.width = canvas.clientWidth;
-          canvas.height = canvas.clientHeight;
+        build(quantity) {
+          // 构成爱心实体
+          for (let i = 0; i < quantity; i++) {
+            const [x, y] = getHeart(Math.random() * 2 * Math.PI);
+            this.points.push([x, y]);
+          }
+          for (let i = 0; i < this.points.length; i++) {
+            const [x, y] = this.points[i];
+            for (let j = 0; j < 3; j++) {
+              this.edgePoints.push(scatterInside(x, y, 0.05));
+            }
+          }
+          for (let i = 0; i < quantity * 3; i++) {
+            const [x, y] = getRandom(this.points);
+            this.centerPoints.push(scatterInside(x, y, 0.17));
+          }
         }
-        window.onresize = onResize;
 
-        // 延迟渲染
-        setTimeout(function () {
-          onResize();
-          render();
-        }, 10);
-      })(document.getElementById("pinkboard"));
+        render() {
+          const frame = renderFrame % this.generateFrame;
+          for (let i = 0; i < this.allPoints[frame].length; i++) {
+            canvasRect(this.allPoints[frame][i]);
+          }
+        }
+      }
+
+      const heart = new Heart();
+
+      function render() {
+        ctx.clearRect(0, 0, clientWidth, clientHeight);
+        heart.render();
+        renderFrame++;
+      }
+      setInterval(() => {
+        render();
+      }, 160);
+
+      // window.requestAnimationFrame(render);
     </script>
   </body>
 </html>
 
-​
